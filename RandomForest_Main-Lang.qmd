@@ -15,7 +15,8 @@ iip_data = read_csv("manuscript_data.csv")
 
 df = iip_data %>%
   mutate(aramaic = as.factor(ifelse(main_lang == "arc", 1, 0))) %>%
-  select(-c(main_lang, name)) %>%
+  select(-c(main_lang, name, geo_place)) %>%
+  filter(region != "Unknown") %>%
   na.omit()
 
 # Splitting data into testing and training data sets
@@ -31,7 +32,7 @@ formula = as.formula(aramaic~.)
 ```{r}
 # Running the forest with 500 tress and 5 tries
 forest_modl = randomForest(formula, data = df_train,
-                          ntree = 500, mtry = 3)
+                          ntree = 500, mtry = 5)
 forest_modl
 ```
 
@@ -54,15 +55,13 @@ varImpPlot(forest_modl)
 ```
 
 ```{r}
-region_lm_modl = glm(aramaic~as.factor(region)+period, df, family="binomial")
+region_lm_modl = glm(aramaic~region, df, family="binomial")
 
 summary(region_lm_modl)
 ```
 
 ```{r}
-plot(aramaic~as.factor(period), data=df)
-```
+plot(region_lm_modl, which = 4, id.n = 3)
 
-```{r}
-
+unique(df$region)
 ```
