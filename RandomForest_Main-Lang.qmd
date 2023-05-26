@@ -9,8 +9,6 @@ library(tidyverse)
 library(randomForest)
 library(caret)
 
-setwd("~/Documents/iip-texts")
-
 iip_data = read_csv("manuscript_data.csv")
 
 df = iip_data %>%
@@ -32,7 +30,7 @@ formula = as.formula(aramaic~.)
 ```{r}
 # Running the forest with 500 tress and 5 tries
 forest_modl = randomForest(formula, data = df_train,
-                          ntree = 500, mtry = 5)
+                          ntree = 600, mtry = 3)
 forest_modl
 ```
 
@@ -58,10 +56,4 @@ varImpPlot(forest_modl)
 region_lm_modl = glm(aramaic~region, df, family="binomial")
 
 summary(region_lm_modl)
-```
-
-```{r}
-plot(region_lm_modl, which = 4, id.n = 3)
-
-unique(df$region)
 ```
