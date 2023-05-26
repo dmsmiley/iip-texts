@@ -11,13 +11,17 @@ library(caret)
 
 iip_data = read_csv("manuscript_data.csv")
 
+# Encoding new col with 1s and 0s for aramaic or not
+# Drop main_lang, name, and geo_place 
+# Take out "Unknown" regions
+# Omit NAs
 df = iip_data %>%
   mutate(aramaic = as.factor(ifelse(main_lang == "arc", 1, 0))) %>%
   select(-c(main_lang, name, geo_place)) %>%
   filter(region != "Unknown") %>%
   na.omit()
 
-# Splitting data into testing and training data sets
+# Splitting data into testing and training data sets 20/80
 n = nrow(df)
 test_index = sample.int(n, size=round(.2*n))
 df_train = df[-test_index,]
@@ -53,7 +57,6 @@ varImpPlot(forest_modl)
 ```
 
 ```{r}
-region_lm_modl = glm(aramaic~region, df, family="binomial")
-
-summary(region_lm_modl)
+table(df$region, df$aramaic)
+chisq.test(df$region, df$aramaic)
 ```
