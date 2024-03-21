@@ -1,0 +1,62 @@
+---
+title: "IIP Texts"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(randomForest)
+library(caret)
+
+iip_data = read_csv("manuscript_data.csv")
+
+# Encoding new col with 1s and 0s for aramaic or not
+# Drop main_lang, name, and geo_place 
+# Take out "Unknown" regions
+# Omit NAs
+df = iip_data %>%
+  mutate(aramaic = as.factor(ifelse(main_lang == "arc", 1, 0))) %>%
+  select(-c(main_lang, name, geo_place)) %>%
+  filter(region != "Unknown") %>%
+  na.omit()
+
+# Splitting data into testing and training data sets 20/80
+n = nrow(df)
+test_index = sample.int(n, size=round(.2*n))
+df_train = df[-test_index,]
+df_test = df[test_index,]
+
+# Creating a general formula for models
+formula = as.formula(aramaic~.)
+```
+
+```{r}
+# Running the forest with 500 tress and 5 tries
+forest_modl = randomForest(formula, data = df_train,
+                          ntree = 600, mtry = 3)
+forest_modl
+```
+
+```{r}
+# Predicting and testing the accuracy
+bag_preds <- predict(forest_modl, df_test)
+
+# Creating the confusion matrix for the test
+confusion <- caret::confusionMatrix(as.factor(bag_preds),
+                                    as.factor(df_test$aramaic))
+confusion
+```
+
+```{r}
+# Feature Importance table
+importance(forest_modl)
+
+# Feature Importance plot
+varImpPlot(forest_modl)
+```
+
+```{r}
+table(df$region, df$aramaic)
+chisq.test(df$region, df$aramaic)
+```
